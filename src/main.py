@@ -63,6 +63,8 @@ collision_radius = 0.2   # Distance within which a robot is considered in collis
 
 # Initialize Network Visualization
 fig, ax = initialize_network_visualization()
+update_frequency = 10  # Update visualization every 10 steps
+step_counter = 0
 
 # Simulation loop with keyboard control
 try:
@@ -105,12 +107,16 @@ try:
         closest_floor_distance = min([state['position'][2] for state in state_data.values()])  # Lowest cloth node
 
         # Update network visualization with cloth metrics and collision info
-        update_network_visualization(ax, robots, state_data, neighbor_distance, perception_range, max_stretch, closest_floor_distance, collision_info)
+        # Only update network visualization every N steps
+        if step_counter % update_frequency == 0:
+            update_network_visualization(ax, robots, state_data, neighbor_distance, perception_range, max_stretch, closest_floor_distance, collision_info)
 
 
-        # Step the simulation
+        # Step the simulation with lower frequency
         p.stepSimulation()
-        time.sleep(1. / 240.)
+        time.sleep(1. / 60.)  # Adjust based on desired speed and accuracy
+        step_counter += 1
+
 except KeyboardInterrupt:
     pass
 
