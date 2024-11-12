@@ -1,5 +1,4 @@
 import pybullet as p
-import random
 import math  # Import math for trigonometric functions
 
 def initialize_environment():
@@ -11,16 +10,21 @@ def add_ground_plane():
     """Adds a ground plane."""
     return p.loadURDF("plane.urdf")
 
-def add_obstacles(num_obstacles=5, min_distance_from_center=1.5, max_distance_from_center=3.0, shape='cylinder'):
-    """Adds obstacles (prisms or cylinders) to the scene at random positions."""
+def add_obstacles(shape='cylinder'):
+    """Adds obstacles (prisms or cylinders) to the scene at fixed positions."""
     obstacle_ids = []
-    for _ in range(num_obstacles):
-        # Randomly generate position around the origin, at least `min_distance_from_center` away
-        angle = random.uniform(0, 2 * math.pi)
-        distance = random.uniform(min_distance_from_center, max_distance_from_center)
-        x = distance * math.cos(angle)  # Use math.cos instead of random.cos
-        y = distance * math.sin(angle)  # Use math.sin instead of random.sin
-        z = 0.5  # Place it slightly above the ground
+    
+    # Define fixed positions and parameters for each obstacle
+    fixed_positions = [
+        (1.5, 1.5, 0.5),
+        (-1.5, 1.5, 0.5),
+        (1.5, -1.5, 0.5),
+        (-1.5, -1.5, 0.5),
+        (0, 2.5, 0.5)
+    ]
+    
+    for pos in fixed_positions:
+        x, y, z = pos
 
         if shape == 'cylinder':
             # Create a cylinder obstacle

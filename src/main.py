@@ -4,7 +4,7 @@ import time
 from environment import initialize_environment, add_ground_plane, add_obstacles
 from robot import create_robots, control_robot
 from cloth import create_cloth, anchor_cloth_nodes
-from utils import find_closest_cloth_node
+from utils import find_closest_cloth_node, measure_max_stretch, is_cloth_touching_ground
 
 # Initialize PyBullet environment
 p.connect(p.GUI)
@@ -34,7 +34,10 @@ cloth_id = create_cloth(anchor_height)
 anchor_cloth_nodes(cloth_id, helper_objects)
 
 # Add obstacles
-obstacles = add_obstacles(num_obstacles=5, min_distance_from_center=2.0, max_distance_from_center=4.0, shape='cylinder')
+obstacles = add_obstacles(shape='cylinder')
+
+# Record initial cloth positions for measuring stretch
+initial_positions = [vertex for vertex in p.getMeshData(cloth_id, -1, flags=p.MESH_DATA_SIMULATION_MESH)[1]]
 
 # Simulation parameters
 selected_robot_index = 0
@@ -69,6 +72,21 @@ try:
         else:
             # Control only the selected robot
             selected_robot_index = control_robot(robots, helper_objects, visual_spheres, velocities, selected_robot_index, max_speed, acceleration, friction, grasp_height_above_robot)
+
+        # Measure maximum stretching
+        max_stretch = measure_max_stretch(cloth_id, initial_positions)
+        print(f"Maximum cloth stretch: {max_stretch}")
+
+        # Check if the cloth is touching the ground
+        cloth_touching_ground = is_cloth_touching_ground(cloth_id)
+        if cloth_touching_ground:
+            print("Cloth is touching the ground.")
+
+        # Check for collisions with obstacles
+        for obstacle_id in obstacles:
+            contact_points = p.getContactPoints(bodyA=cloth_id, bodyB=obstacle_id)
+            if contact_points:
+                print(f"Collision detected between cloth and obstacle {obstacle_id}")
 
         # Step the simulation
         p.stepSimulation()
